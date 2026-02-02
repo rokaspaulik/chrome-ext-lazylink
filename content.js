@@ -20,7 +20,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     let title = msg.url; // fallback
 
     if (element && element.tagName === "A") {
-        // Try multiple ways to get something meaningful
+        // Try multiple ways to get a meaningful title
         title =
             element.innerText?.trim() ||
             element.title?.trim() ||

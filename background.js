@@ -1,9 +1,18 @@
 // ------------------------
-// Helper: fetch YouTube video title using oEmbed
+// Helper: fetch YouTube video title via oEmbed
+// Supports /watch?v=VIDEO_ID and /shorts/VIDEO_ID
 // ------------------------
 async function getYouTubeTitle(url) {
     try {
-        const apiUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+        let normalizedUrl = url;
+
+        // Detect Shorts URL and convert to watch URL
+        const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/);
+        if (shortsMatch) {
+            normalizedUrl = `https://www.youtube.com/watch?v=${shortsMatch[1]}`;
+        }
+
+        const apiUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(normalizedUrl)}&format=json`;
         const response = await fetch(apiUrl);
         if (!response.ok) throw new Error("Failed to fetch oEmbed");
         const data = await response.json();
@@ -32,13 +41,13 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId !== "saveLink") return;
 
     const url = info.linkUrl;
-    let title = url; // fallback
+    let title = url;
 
-    if (url.includes("youtube.com/watch")) {
-        // Use YouTube oEmbed API
+    // YouTube detection
+    if (url.includes("youtube.com/watch") || url.includes("youtube.com/shorts/")) {
         title = await getYouTubeTitle(url);
     } else if (tab?.id) {
-        // Ask content script for link text/title/alt/etc
+        // Ask content script for normal link title
         try {
             const response = await chrome.tabs.sendMessage(tab.id, {
                 action: "getLinkTitle",
@@ -59,7 +68,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
             chrome.storage.local.set({ links }, () => {
                 console.log("Link saved:", { title, url });
 
-                // Optional notification
+                // Notification
                 chrome.notifications.create({
                     type: "basic",
                     iconUrl: "saved_notification.png",
