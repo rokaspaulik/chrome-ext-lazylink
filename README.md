@@ -4,7 +4,7 @@ A lightweight, UX-friendly Chrome extension to **save, pin, search, and manage y
 
 This extension was developed as a rapid prototyping experiment, vibecoded using ChatGPT in under 30 minutes to demonstrate the utility of agile, AI-assisted development. It serves as a focused study on delivering high-impact browser utility through minimalist design and efficient execution.  
 
-![Screenshot](https://i.snipboard.io/VqhFve.jpg)
+![Screenshot](https://snipboard.io/FIAGHU.jpg)
 
 ---
 
