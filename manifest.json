@@ -1,0 +1,14 @@
+{
+    "name": "LazyLink",
+    "description": "One-click saving for links you want to revisit. Keep articles, videos, and resources organized and accessible whenever you need them.",
+    "version": "0.1.0",
+    "manifest_version": 3,
+    "permissions": [
+        "tabs",
+        "storage"
+    ],
+    "action": {
+        "default_popup": "app.html",
+        "default_icon": "app_icon.png"
+    }
+}

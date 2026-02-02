@@ -1,0 +1,136 @@
+* {
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 10px;
+    width: 340px;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #e5e7eb;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+h1 {
+    margin: 0;
+    font-size: 16px;
+    text-align: center;
+}
+
+.signature {
+    font-size: 11px;
+    text-align: center;
+    margin-bottom: 6px;
+}
+
+.signature a {
+    color: #93c5fd;
+    text-decoration: none;
+}
+
+.signature a:hover {
+    text-decoration: underline;
+}
+
+input {
+    padding: 7px 9px;
+    border-radius: 6px;
+    border: none;
+    font-size: 13px;
+    outline: none;
+}
+
+button {
+    background: #6366f1;
+    border: none;
+    border-radius: 6px;
+    padding: 8px;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #4f46e5;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 260px;
+    overflow-y: auto;
+}
+
+li {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.link-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #e5e7eb;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 190px;
+}
+
+.url {
+    font-size: 11px;
+    color: #93c5fd;
+    text-decoration: none;
+    word-break: break-all;
+}
+
+.url:hover {
+    text-decoration: underline;
+}
+
+.delete-btn {
+    background: transparent;
+    border: none;
+    color: #f87171;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.delete-btn:hover {
+    color: #ef4444;
+}
+
+.pin-btn {
+    background: transparent;
+    border: none;
+    color: #facc15;
+    font-size: 14px;
+    cursor: pointer;
+    margin-right: 4px;
+}
+
+.pin-btn:hover {
+    color: #eab308;
+}
+
+.link-actions {
+    display: flex;
+    align-items: center;
+}
