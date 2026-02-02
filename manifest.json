@@ -1,6 +1,6 @@
 {
     "name": "LazyLink",
-    "description": "One-click saving for links you want to revisit. Keep articles, videos, and resources organized and accessible whenever you need them.",
+    "description": "Save links instantly! Organize articles, videos, and YouTube content to revisit later — your personal watch later list.",
     "version": "0.3.1",
     "manifest_version": 3,
     "permissions": [
