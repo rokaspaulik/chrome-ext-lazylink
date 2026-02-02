@@ -2,7 +2,7 @@ const saveBtn = document.getElementById("saveBtn");
 const linkList = document.getElementById("linkList");
 const searchInput = document.getElementById("searchInput");
 
-// Load links on popup open
+// Load links
 chrome.storage.local.get(["links"], (result) => {
     renderLinks(result.links || []);
 });
@@ -11,10 +11,16 @@ chrome.storage.local.get(["links"], (result) => {
 saveBtn.addEventListener("click", () => {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
         const { title, url } = tabs[0];
+        let tags = [];
+
+        if (url.includes("youtube.com/watch") || url.includes("youtube.com/shorts/")) {
+            tags.push("youtube");
+        }
+
         chrome.storage.local.get(["links"], (result) => {
             const links = result.links || [];
             if (!links.some(l => l.url === url)) {
-                links.unshift({ title, url, pinned: false });
+                links.unshift({ title, url, pinned: false, tags });
                 chrome.storage.local.set({ links }, () => renderLinks(links));
             }
         });
@@ -28,17 +34,16 @@ searchInput.addEventListener("input", () => {
         const query = searchInput.value.toLowerCase();
         const filtered = links.filter(link =>
             link.title.toLowerCase().includes(query) ||
-            link.url.toLowerCase().includes(query)
+            link.url.toLowerCase().includes(query) ||
+            (link.tags || []).some(tag => tag.toLowerCase().includes(query))
         );
         renderLinks(filtered);
     });
 });
 
-// Render list
+// Render links
 function renderLinks(links) {
     linkList.innerHTML = "";
-
-    // Pinned links first
     links.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
 
     links.forEach(link => {
@@ -47,12 +52,13 @@ function renderLinks(links) {
         const row = document.createElement("div");
         row.className = "link-row";
 
-        // Title span (editable)
+        // Title
         const title = document.createElement("span");
         title.className = "title";
         title.textContent = link.title;
         title.title = "Double-click to edit";
         title.ondblclick = () => startEditingTitle(link.url, title);
+        row.appendChild(title);
 
         // Actions
         const actions = document.createElement("div");
@@ -61,7 +67,6 @@ function renderLinks(links) {
         const pinBtn = document.createElement("button");
         pinBtn.className = "pin-btn";
         pinBtn.textContent = link.pinned ? "Unpin" : "Pin";
-        pinBtn.title = link.pinned ? "Unpin link" : "Pin link";
         pinBtn.onclick = () => togglePin(link.url);
 
         const deleteBtn = document.createElement("button");
@@ -71,25 +76,53 @@ function renderLinks(links) {
 
         actions.appendChild(pinBtn);
         actions.appendChild(deleteBtn);
-
-        row.appendChild(title);
         row.appendChild(actions);
 
+        li.appendChild(row);
+
+        // URL
         const urlEl = document.createElement("a");
         urlEl.href = link.url;
         urlEl.textContent = link.url;
         urlEl.className = "url";
         urlEl.target = "_blank";
-
-        li.appendChild(row);
         li.appendChild(urlEl);
+
+        // Tags
+        const tagContainer = document.createElement("div");
+        tagContainer.className = "tags";
+
+        (link.tags || []).forEach(tag => {
+            const tagEl = document.createElement("span");
+            tagEl.className = "tag";
+            tagEl.textContent = tag;
+            tagEl.title = "Click to filter by this tag, double-click to remove";
+
+            tagEl.onclick = (e) => {
+                e.stopPropagation();
+                filterByTag(tag);
+            };
+
+            tagEl.ondblclick = (e) => {
+                e.stopPropagation();
+                removeTagFromLink(link.url, tag);
+            };
+
+            tagContainer.appendChild(tagEl);
+        });
+
+        const addTagBtn = document.createElement("button");
+        addTagBtn.className = "add-tag-btn";
+        addTagBtn.textContent = "+";
+        addTagBtn.onclick = () => addTagToLink(link.url);
+        tagContainer.appendChild(addTagBtn);
+
+        li.appendChild(tagContainer);
         linkList.appendChild(li);
     });
 }
 
-// ---------------------
-// Editable title logic
-// ---------------------
+// Editable title
 function startEditingTitle(url, titleSpan) {
     const input = document.createElement("input");
     input.type = "text";
@@ -112,11 +145,52 @@ function startEditingTitle(url, titleSpan) {
     input.addEventListener("blur", save);
     input.addEventListener("keydown", e => {
         if (e.key === "Enter") input.blur();
-        if (e.key === "Escape") renderLinks(); // cancel
+        if (e.key === "Escape") renderLinks();
     });
 }
 
-// Toggle pinned state
+// Add tag
+function addTagToLink(url) {
+    const tag = prompt("Enter a tag for this link:").trim();
+    if (!tag) return;
+
+    chrome.storage.local.get(["links"], (result) => {
+        const links = result.links || [];
+        const updated = links.map(l => {
+            if (l.url === url) {
+                l.tags = l.tags || [];
+                if (!l.tags.includes(tag)) l.tags.push(tag);
+            }
+            return l;
+        });
+        chrome.storage.local.set({ links: updated }, () => renderLinks(updated));
+    });
+}
+
+// Remove tag
+function removeTagFromLink(url, tagToRemove) {
+    chrome.storage.local.get(["links"], (result) => {
+        const links = result.links || [];
+        const updated = links.map(l => {
+            if (l.url === url && l.tags) {
+                l.tags = l.tags.filter(t => t !== tagToRemove);
+            }
+            return l;
+        });
+        chrome.storage.local.set({ links: updated }, () => renderLinks(updated));
+    });
+}
+
+// Filter by tag
+function filterByTag(tag) {
+    chrome.storage.local.get(["links"], (result) => {
+        const links = result.links || [];
+        const filtered = links.filter(l => (l.tags || []).includes(tag));
+        renderLinks(filtered);
+    });
+}
+
+// Pin / Delete
 function togglePin(url) {
     chrome.storage.local.get(["links"], (result) => {
         const links = result.links || [];
@@ -125,7 +199,6 @@ function togglePin(url) {
     });
 }
 
-// Delete link
 function deleteLink(url) {
     chrome.storage.local.get(["links"], (result) => {
         const links = result.links || [];

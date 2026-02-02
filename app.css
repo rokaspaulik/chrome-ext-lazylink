@@ -134,3 +134,57 @@ li {
     display: flex;
     align-items: center;
 }
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.tag {
+    background: #2563eb;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    color: #fff;
+}
+
+.tag:hover {
+    background: #1d4ed8;
+}
+
+.add-tag-btn {
+    background: #4ade80;
+    border: none;
+    border-radius: 4px;
+    color: #000;
+    font-size: 12px;
+    padding: 2px 6px;
+    cursor: pointer;
+}
+
+.add-tag-btn:hover {
+    background: #22c55e;
+}
+
+.edit-title-input {
+    font-size: 13px;
+    padding: 2px 4px;
+    border-radius: 4px;
+    border: none;
+    outline: 1px solid #4ade80;
+    width: auto;
+    min-width: 40px;
+}
+
+.edit-tag-input {
+    font-size: 11px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    border: none;
+    outline: 1px solid #4ade80;
+    width: auto;
+    min-width: 20px;
+}

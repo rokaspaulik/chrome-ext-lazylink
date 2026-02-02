@@ -1,16 +1,8 @@
-// ------------------------
-// Helper: fetch YouTube video title via oEmbed
-// Supports /watch?v=VIDEO_ID and /shorts/VIDEO_ID
-// ------------------------
 async function getYouTubeTitle(url) {
     try {
         let normalizedUrl = url;
-
-        // Detect Shorts URL and convert to watch URL
         const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]+)/);
-        if (shortsMatch) {
-            normalizedUrl = `https://www.youtube.com/watch?v=${shortsMatch[1]}`;
-        }
+        if (shortsMatch) normalizedUrl = `https://www.youtube.com/watch?v=${shortsMatch[1]}`;
 
         const apiUrl = `https://www.youtube.com/oembed?url=${encodeURIComponent(normalizedUrl)}&format=json`;
         const response = await fetch(apiUrl);
@@ -19,13 +11,11 @@ async function getYouTubeTitle(url) {
         return data.title;
     } catch (err) {
         console.warn("Failed to fetch YouTube title:", err);
-        return url; // fallback
+        return url;
     }
 }
 
-// ------------------------
 // Create context menu
-// ------------------------
 chrome.runtime.onInstalled.addListener(() => {
     chrome.contextMenus.create({
         id: "saveLink",
@@ -34,41 +24,31 @@ chrome.runtime.onInstalled.addListener(() => {
     });
 });
 
-// ------------------------
-// Handle context menu clicks
-// ------------------------
+// Context menu click
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId !== "saveLink") return;
 
     const url = info.linkUrl;
     let title = url;
+    let tags = [];
 
-    // YouTube detection
     if (url.includes("youtube.com/watch") || url.includes("youtube.com/shorts/")) {
         title = await getYouTubeTitle(url);
+        tags.push("youtube");
     } else if (tab?.id) {
-        // Ask content script for normal link title
         try {
-            const response = await chrome.tabs.sendMessage(tab.id, {
-                action: "getLinkTitle",
-                url
-            });
+            const response = await chrome.tabs.sendMessage(tab.id, { action: "getLinkTitle", url });
             if (response?.title) title = response.title;
         } catch (err) {
-            console.warn("Failed to get link title from page:", err);
+            console.warn("Failed to get link title:", err);
         }
     }
 
-    // Save link in storage
     chrome.storage.local.get(["links"], (result) => {
         const links = result.links || [];
-
         if (!links.some(l => l.url === url)) {
-            links.unshift({ title, url, pinned: false });
+            links.unshift({ title, url, pinned: false, tags });
             chrome.storage.local.set({ links }, () => {
-                console.log("Link saved:", { title, url });
-
-                // Notification
                 chrome.notifications.create({
                     type: "basic",
                     iconUrl: "saved_notification.png",
