@@ -53,9 +53,14 @@ function renderLinks(links) {
         const row = document.createElement("div");
         row.className = "link-row";
 
+        // Title span (editable)
         const title = document.createElement("span");
         title.className = "title";
         title.textContent = link.title;
+        title.title = "Double-click to edit";
+
+        // Double-click to edit
+        title.ondblclick = () => startEditingTitle(link.url, title);
 
         // Actions: pin + delete
         const actions = document.createElement("div");
@@ -65,13 +70,11 @@ function renderLinks(links) {
         pinBtn.className = "pin-btn";
         pinBtn.textContent = link.pinned ? "Unpin" : "Pin";
         pinBtn.title = link.pinned ? "Unpin link" : "Pin link";
-
         pinBtn.onclick = () => togglePin(link.url);
 
         const deleteBtn = document.createElement("button");
         deleteBtn.className = "delete-btn";
         deleteBtn.textContent = "X";
-
         deleteBtn.onclick = () => deleteLink(link.url);
 
         actions.appendChild(pinBtn);
@@ -80,15 +83,54 @@ function renderLinks(links) {
         row.appendChild(title);
         row.appendChild(actions);
 
-        const url = document.createElement("a");
-        url.href = link.url;
-        url.textContent = link.url;
-        url.className = "url";
-        url.target = "_blank";
+        const urlEl = document.createElement("a");
+        urlEl.href = link.url;
+        urlEl.textContent = link.url;
+        urlEl.className = "url";
+        urlEl.target = "_blank";
 
         li.appendChild(row);
-        li.appendChild(url);
+        li.appendChild(urlEl);
         linkList.appendChild(li);
+    });
+}
+
+// ---------------------
+// Editable title logic
+// ---------------------
+function startEditingTitle(url, titleSpan) {
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = titleSpan.textContent;
+    input.className = "edit-title-input";
+
+    // Replace span with input
+    titleSpan.replaceWith(input);
+    input.focus();
+    input.select();
+
+    // Save on Enter or blur
+    const save = () => {
+        const newTitle = input.value.trim() || url;
+        chrome.storage.local.get(["links"], (result) => {
+            const links = result.links || [];
+            const updated = links.map(l =>
+                l.url === url ? { ...l, title: newTitle } : l
+            );
+            chrome.storage.local.set({ links: updated }, () => {
+                renderLinks(updated);
+            });
+        });
+    };
+
+    input.addEventListener("blur", save);
+    input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            input.blur();
+        }
+        if (e.key === "Escape") {
+            renderLinks(); // cancel editing
+        }
     });
 }
 
