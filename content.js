@@ -1,26 +1,17 @@
 // Track last right-clicked element
 let lastRightClickedElement = null;
 
-// Capture right-clicked element
 document.addEventListener("contextmenu", (event) => {
     lastRightClickedElement = event.target;
 }, true);
 
-// Listen for background requests
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if (msg.action !== "getLinkTitle") return;
 
     let element = lastRightClickedElement;
+    let title = msg.url;
 
-    // Walk up DOM to find <a> if user clicked nested element
-    while (element && element.tagName !== "A") {
-        element = element.parentElement;
-    }
-
-    let title = msg.url; // fallback
-
-    if (element && element.tagName === "A") {
-        // Try multiple ways to get a meaningful title
+    if (element) {
         title =
             element.innerText?.trim() ||
             element.title?.trim() ||
@@ -28,6 +19,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             element.querySelector("img")?.alt?.trim() ||
             element.href ||
             msg.url;
+    }
+
+    // If the title is still just the URL, try page <title>
+    if (title === msg.url && msg.tabId) {
+        chrome.scripting.executeScript(
+            {
+                target: { tabId: msg.tabId },
+                func: (url) => document.querySelector("title")?.innerText || url
+            },
+            (results) => {
+                if (results?.[0]?.result) {
+                    sendResponse({ title: results[0].result });
+                } else {
+                    sendResponse({ title });
+                }
+            }
+        );
+        return true; // async response
     }
 
     sendResponse({ title });

@@ -52,7 +52,6 @@ function renderLinks(links) {
         const row = document.createElement("div");
         row.className = "link-row";
 
-        // Title
         const title = document.createElement("span");
         title.className = "title";
         title.textContent = link.title;
@@ -60,7 +59,6 @@ function renderLinks(links) {
         title.ondblclick = () => startEditingTitle(link.url, title);
         row.appendChild(title);
 
-        // Actions
         const actions = document.createElement("div");
         actions.className = "link-actions";
 
@@ -149,7 +147,7 @@ function startEditingTitle(url, titleSpan) {
     });
 }
 
-// Add tag
+// Tags
 function addTagToLink(url) {
     const tag = prompt("Enter a tag for this link:").trim();
     if (!tag) return;
@@ -167,7 +165,6 @@ function addTagToLink(url) {
     });
 }
 
-// Remove tag
 function removeTagFromLink(url, tagToRemove) {
     chrome.storage.local.get(["links"], (result) => {
         const links = result.links || [];
@@ -181,7 +178,6 @@ function removeTagFromLink(url, tagToRemove) {
     });
 }
 
-// Filter by tag
 function filterByTag(tag) {
     chrome.storage.local.get(["links"], (result) => {
         const links = result.links || [];

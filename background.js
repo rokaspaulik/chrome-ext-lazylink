@@ -37,7 +37,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         tags.push("youtube");
     } else if (tab?.id) {
         try {
-            const response = await chrome.tabs.sendMessage(tab.id, { action: "getLinkTitle", url });
+            const response = await chrome.tabs.sendMessage(tab.id, {
+                action: "getLinkTitle",
+                url,
+                tabId: tab.id
+            });
             if (response?.title) title = response.title;
         } catch (err) {
             console.warn("Failed to get link title:", err);
