@@ -21,6 +21,7 @@ This extension was developed as a rapid prototyping experiment, vibecoded using 
 
 ## Installation
 
+0. [Download directly from chrome marketplace](https://chromewebstore.google.com/detail/pjiknjlilgmibeinflngpajebbafjedk?utm_source=item-share-cb)
 1. Clone this repository:
 
 ```bash
